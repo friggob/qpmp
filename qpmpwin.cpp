@@ -3,6 +3,7 @@
 #include <QFileDialog>
 #include <QDebug>
 #include <QMimeDatabase>
+#include <QMessageBox>
 
 qpmpWin::~qpmpWin()
 {
@@ -175,4 +176,15 @@ QString qpmpWin::sizeFormat(quint64 size){
   }
 
   return QString().setNum(calc, 'f', 2) + " " + unit;
+}
+
+void qpmpWin::on_actionAbout_triggered()
+{
+  QString msg;
+  msg = "qpmp, a pmp inplementation in QT\n\n";
+  msg += "Version: "+ver.toString()+"\n\n";
+  msg += "Created by:\n";
+  msg += "Fredrik Olausson <fredrik@bluppfisk.org>\n\n";
+
+  QMessageBox::about(this,"About qpmp",msg);
 }

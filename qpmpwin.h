@@ -2,6 +2,7 @@
 #define QPMPWIN_H
 
 #include <QMainWindow>
+#include <QVersionNumber>
 
 namespace Ui {
   class qpmpWin;
@@ -15,6 +16,7 @@ class qpmpWin : public QMainWindow
 	explicit qpmpWin(QWidget *parent = 0);
 	void setFileList(QStringList);
 	QString sizeFormat(quint64 size);
+	const QVersionNumber ver = QVersionNumber(0,2,0);
 	~qpmpWin();
 
   private slots:
@@ -25,6 +27,8 @@ class qpmpWin : public QMainWindow
 	void updateTable();
 
 	void on_actionRefresh_triggered();
+
+	void on_actionAbout_triggered();
 
   private:
 	Ui::qpmpWin *ui;
