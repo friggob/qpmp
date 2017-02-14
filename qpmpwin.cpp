@@ -4,6 +4,8 @@
 #include <QDebug>
 #include <QMimeDatabase>
 #include <QMessageBox>
+#include <QProcess>
+#include <QKeyEvent>
 
 qpmpWin::~qpmpWin()
 {
@@ -14,9 +16,53 @@ qpmpWin::qpmpWin(QWidget *parent) :
   QMainWindow(parent),
   ui(new Ui::qpmpWin)
 {
+#ifndef Q_OS_WIN
+  mP = "mpv";
+#else
+  mP = "mpv.exe";
+#endif
+
+  pArgs << "--fs";
+
   connect(this,SIGNAL(mFilesUpdated()),this,SLOT(updateTable()));
   ui->setupUi(this);
   setupTable();
+  ui->tableWidget->installEventFilter(this);
+}
+
+bool qpmpWin::eventFilter(QObject *watched, QEvent *event){
+
+  if(event->type() == QEvent::KeyPress){
+	QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+
+	if(keyEvent->key() == Qt::Key_Enter || keyEvent->key() == Qt::Key_Return){
+	  startPlayer();
+	  return true;
+	}
+  }
+  return QObject::eventFilter(watched,event);
+}
+
+void qpmpWin::startPlayer(){
+  QString mF;
+  int row;
+  QTableWidget *tw = ui->tableWidget;
+  QProcess *proc = new QProcess();
+  QStringList args;
+
+  row = tw->currentRow();
+  mF = tw->item(row,1)->toolTip();
+
+  args = pArgs;
+  args << mF;
+
+  proc->start(mP,args);
+
+  if(!proc->waitForFinished(-1)){
+	qDebug() << "Program had an error";
+  }
+
+  tw->selectRow(row+1);
 }
 
 void qpmpWin::setupTable(){
@@ -28,7 +74,6 @@ void qpmpWin::setupTable(){
   tw->setSelectionBehavior(QTableWidget::SelectRows);
   tw->setRowCount(mFiles.count());
   tw->setSelectionMode(QTableWidget::SingleSelection);
-  qDebug() << "hv->wdith():" << ui->tableWidget->verticalHeader()->sizeHint();
 }
 
 void qpmpWin::updateTable(){
@@ -80,6 +125,7 @@ void qpmpWin::resizeEvent(QResizeEvent *event){
 void qpmpWin::on_actionQuit_triggered()
 {
   close();
+  QApplication::quit();
 }
 
 void qpmpWin::on_actionOpen_triggered()
@@ -187,4 +233,18 @@ void qpmpWin::on_actionAbout_triggered()
   msg += "Fredrik Olausson <fredrik@bluppfisk.org>\n\n";
 
   QMessageBox::about(this,"About qpmp",msg);
+}
+
+void qpmpWin::on_actionNo_Sound_triggered()
+{
+  QAction *a = ui->actionNo_Sound;
+  QString s = "--no-audio";
+
+  if(!a->isChecked()){
+	int i;
+	i = pArgs.indexOf(s);
+	pArgs.removeAt(i);
+  }else{
+	pArgs << s;
+  }
 }

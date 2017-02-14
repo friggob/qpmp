@@ -16,7 +16,8 @@ class qpmpWin : public QMainWindow
 	explicit qpmpWin(QWidget *parent = 0);
 	void setFileList(QStringList);
 	QString sizeFormat(quint64 size);
-	const QVersionNumber ver = QVersionNumber(0,2,0);
+	QString mP; //movie player
+	const QVersionNumber ver = QVersionNumber::fromString(APP_VERSION);
 	~qpmpWin();
 
   private slots:
@@ -25,21 +26,25 @@ class qpmpWin : public QMainWindow
 	void on_actionSaveAs_triggered();
 	void processFileList(QStringList);
 	void updateTable();
-
 	void on_actionRefresh_triggered();
-
 	void on_actionAbout_triggered();
+
+	void on_actionNo_Sound_triggered();
 
   private:
 	Ui::qpmpWin *ui;
 	QStringList mFiles;
 	QStringList fList;
+	QStringList pArgs; // Movie player arguments
 	void resizeEvent(QResizeEvent *event);
-
 	void setupTable();
+	void startPlayer();
 
   signals:
 	void mFilesUpdated();
+
+  protected:
+	bool eventFilter(QObject *watched, QEvent *event);
 };
 
 #endif // QPMPWIN_H
