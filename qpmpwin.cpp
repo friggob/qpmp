@@ -50,7 +50,11 @@ void qpmpWin::startPlayer(){
   QProcess *proc = new QProcess();
   QStringList args;
 
-  row = tw->currentRow();
+  if((row = tw->currentRow()) == -1){
+	qDebug() << "No row selected!";
+	return;
+  }
+
   mF = tw->item(row,1)->toolTip();
 
   args = pArgs;
