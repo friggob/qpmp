@@ -267,6 +267,9 @@
    <property name="text">
     <string>Shuffle</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+Z</string>
+   </property>
   </action>
   <action name="actionRefresh">
    <property name="text">

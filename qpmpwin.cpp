@@ -22,6 +22,9 @@ qpmpWin::qpmpWin(QWidget *parent) :
   mP = "mpv.exe";
 #endif
 
+  mAction.ndel = false;
+  mAction.mv = false;
+
   pArgs << "--fs";
 
   connect(this,SIGNAL(mFilesUpdated()),this,SLOT(updateTable()));
@@ -298,4 +301,32 @@ void qpmpWin::on_actionForce_16_9_triggered()
 	toggleArgs(ui->actionForce_4_3,"--video-aspect=4:3");
   }
   toggleArgs(ui->actionForce_16_9,"--video-aspect=16:9");
+}
+
+void qpmpWin::on_actionShuffle_triggered()
+{
+  std::random_shuffle(mFiles.begin(),mFiles.end());
+  updateTable();
+  ui->tableWidget->selectRow(0);
+}
+
+void qpmpWin::on_actionMove_file_triggered()
+{
+  if(ui->actionMove_file->isChecked()){
+	updateStatus("Now moving files after played");
+	mAction.mv = true;
+  }else{
+	mAction.mv = false;
+  }
+}
+
+void qpmpWin::on_actionNo_delete_triggered()
+{
+  if(ui->actionNo_delete->isChecked()){
+	updateStatus("Prohibiting deletion of files");
+	mAction.ndel = true;
+  }else{
+	updateStatus("Deletion of files possible");
+	mAction.ndel = false;
+  }
 }

@@ -30,12 +30,12 @@ class qpmpWin : public QMainWindow
 	void on_actionAbout_triggered();
 	void on_actionNo_Sound_triggered();
 	void updateStatus(QString);
-
 	void on_actionFullscreen_triggered();
-
 	void on_actionForce_4_3_triggered();
-
 	void on_actionForce_16_9_triggered();
+	void on_actionShuffle_triggered();
+	void on_actionMove_file_triggered();
+	void on_actionNo_delete_triggered();
 
   private:
 	Ui::qpmpWin *ui;
@@ -47,6 +47,10 @@ class qpmpWin : public QMainWindow
 	void setupTable();
 	void startPlayer();
 	void toggleArgs(QAction*,QString);
+	struct mAction{
+		bool ndel;
+		bool mv;
+	} mAction;
 
   signals:
 	void mFilesUpdated();
