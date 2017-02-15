@@ -62,6 +62,11 @@ void qpmpWin::startPlayer(){
 
   proc->start(mP,args);
 
+  QString msg = "mpv args: ";
+  msg += pArgs.join(", ");
+
+  ui->statusBar->showMessage(msg);
+
   if(!proc->waitForFinished(-1)){
 	qDebug() << "Program had an error";
   }
@@ -105,6 +110,10 @@ void qpmpWin::updateTable(){
 	  tw->setItem(i,0,sCell);
 	}
 	sCell->setText(sizeFormat(fi.size()));
+
+	if(fi.absoluteFilePath() == startFile){
+	  tw->selectRow(i);
+	}
   }
 
   if(tw->currentRow() == -1){
@@ -117,11 +126,14 @@ void qpmpWin::updateTable(){
   hh->setStretchLastSection(true);
   tw->adjustSize();
 
-  qDebug() << "Current row:" << tw->currentRow();
-
+  //qDebug() << "Current row:" << tw->currentRow();
+  QString msg;
+  msg = QString::asprintf("%d movie files",tw->rowCount());
+  emit updateStatus(msg);
 }
 
 void qpmpWin::resizeEvent(QResizeEvent *event){
+
   QMainWindow::resizeEvent(event);
   emit updateTable();
 }
@@ -155,7 +167,7 @@ void qpmpWin::on_actionSaveAs_triggered()
 }
 
 void qpmpWin::setFileList(QStringList list){
-  list.removeFirst();
+  //list.removeFirst();
   processFileList(list);
 }
 
@@ -184,6 +196,13 @@ void qpmpWin::processFileList(QStringList list){
 		  l = ts.readLine();
 		  QFileInfo fi2(l);
 
+		  if(l.startsWith("*")){
+			l = l.remove(0,1);
+			fi2 = QFileInfo(l);
+			startFile = fi2.absoluteFilePath();
+			qDebug() << "Starting file:" << startFile;
+		  }
+
 		  if(!list.contains(l) &&
 			 !list.contains(fi2.absoluteFilePath()) &&
 			 !list.contains(fi2.filePath())){
@@ -203,7 +222,7 @@ void qpmpWin::processFileList(QStringList list){
 	  }
 	}
   }
-  qDebug() << "mFiles:" << mFiles;
+  //qDebug() << "mFiles:" << mFiles;
   emit mFilesUpdated();
 }
 
@@ -239,11 +258,7 @@ void qpmpWin::on_actionAbout_triggered()
   QMessageBox::about(this,"About qpmp",msg);
 }
 
-void qpmpWin::on_actionNo_Sound_triggered()
-{
-  QAction *a = ui->actionNo_Sound;
-  QString s = "--no-audio";
-
+void qpmpWin::toggleArgs(QAction *a,QString s){
   if(!a->isChecked()){
 	int i;
 	i = pArgs.indexOf(s);
@@ -251,4 +266,36 @@ void qpmpWin::on_actionNo_Sound_triggered()
   }else{
 	pArgs << s;
   }
+}
+
+void qpmpWin::on_actionNo_Sound_triggered()
+{
+  toggleArgs(ui->actionNo_Sound,"--no-audio");
+}
+
+void qpmpWin::updateStatus(QString msg){
+  ui->statusBar->showMessage(msg);
+}
+
+void qpmpWin::on_actionFullscreen_triggered()
+{
+  toggleArgs(ui->actionFullscreen,"--fs");
+}
+
+void qpmpWin::on_actionForce_4_3_triggered()
+{
+  if(ui->actionForce_16_9->isChecked()){
+	ui->actionForce_16_9->setChecked(false);
+	toggleArgs(ui->actionForce_16_9,"--video-aspect=16:9");
+  }
+  toggleArgs(ui->actionForce_4_3,"--video-aspect=4:3");
+}
+
+void qpmpWin::on_actionForce_16_9_triggered()
+{
+  if(ui->actionForce_4_3->isChecked()){
+	ui->actionForce_4_3->setChecked(false);
+	toggleArgs(ui->actionForce_4_3,"--video-aspect=4:3");
+  }
+  toggleArgs(ui->actionForce_16_9,"--video-aspect=16:9");
 }
