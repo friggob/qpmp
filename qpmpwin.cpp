@@ -25,6 +25,8 @@ qpmpWin::qpmpWin(QWidget *parent) :
   mAction.ndel = false;
   mAction.mv = false;
 
+  startDir = QFileInfo(".").absolutePath();
+
   pArgs << "--fs";
 
   connect(this,SIGNAL(mFilesUpdated()),this,SLOT(updateTable()));
@@ -42,8 +44,37 @@ bool qpmpWin::eventFilter(QObject *watched, QEvent *event){
 	  startPlayer();
 	  return true;
 	}
+	if(keyEvent->key() == Qt::Key_Delete || keyEvent->key() == Qt::Key_Backspace){
+	  deleteFile();
+	  return true;
+	}
   }
   return QObject::eventFilter(watched,event);
+}
+
+void qpmpWin::deleteFile(){
+  QString f;
+  QFile fd;
+  int row;
+
+  if(mAction.ndel){
+	return;
+  }
+
+  row = ui->tableWidget->currentRow();
+  if(row == -1 || row == 0){
+	return;
+  }
+  f = ui->tableWidget->item(row,1)->toolTip();
+
+  fd.setFileName(f);
+  if(fd.remove()){
+	qDebug() << "Removed file:" << f;
+  }else{
+	qDebug() << "Failed to remove file:" << f;
+  }
+
+  qDebug() << "File to delete:" << f;
 }
 
 void qpmpWin::startPlayer(){
@@ -55,6 +86,13 @@ void qpmpWin::startPlayer(){
 
   if((row = tw->currentRow()) == -1){
 	qDebug() << "No row selected!";
+	return;
+  }
+
+  row += 1;
+
+  if(row >= tw->rowCount()){
+	qDebug() << "No more rows!";
 	return;
   }
 
@@ -74,7 +112,7 @@ void qpmpWin::startPlayer(){
 	qDebug() << "Program had an error";
   }
 
-  tw->selectRow(row+1);
+  tw->selectRow(row);
 }
 
 void qpmpWin::setupTable(){
@@ -86,16 +124,23 @@ void qpmpWin::setupTable(){
   tw->setSelectionBehavior(QTableWidget::SelectRows);
   tw->setRowCount(mFiles.count());
   tw->setSelectionMode(QTableWidget::SingleSelection);
+  tw->setRowCount(1);
+  /*
+  tw->setItem(0,0,new QTableWidgetItem());
+  tw->setItem(0,1,new QTableWidgetItem());
+  tw->item(0,0)->setText("Null");
+  tw->item(0,1)->setText("Null");
+  */
 }
 
 void qpmpWin::updateTable(){
   QTableWidget *tw = ui->tableWidget;
   QHeaderView *hh = tw->horizontalHeader();
 
-  tw->setRowCount(mFiles.count());
+  tw->setRowCount(mFiles.count()+1);
 
   foreach(QString s,mFiles){
-	int i = mFiles.indexOf(s);
+	int i = mFiles.indexOf(s)+1;
 	QFileInfo fi(s);
 
 	QTableWidgetItem *nCell = tw->item(i,1);

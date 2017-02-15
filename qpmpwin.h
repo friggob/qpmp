@@ -43,10 +43,12 @@ class qpmpWin : public QMainWindow
 	QStringList fList;
 	QStringList pArgs; // Movie player arguments
 	QString startFile; // Start playlist with this file
+	QString startDir; // Current dir when program starts
 	void resizeEvent(QResizeEvent *event);
 	void setupTable();
 	void startPlayer();
 	void toggleArgs(QAction*,QString);
+	void deleteFile();
 	struct mAction{
 		bool ndel;
 		bool mv;
