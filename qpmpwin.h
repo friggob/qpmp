@@ -15,6 +15,9 @@ class qpmpWin : public QMainWindow
   public:
 	explicit qpmpWin(QWidget *parent = 0);
 	void setFileList(QStringList);
+	void setnDel(bool);
+	void setNoSound(bool);
+	void setMoveFile(bool);
 	QString sizeFormat(quint64 size);
 	QString mP; //movie player
 	const QVersionNumber ver = QVersionNumber::fromString(APP_VERSION);
@@ -36,9 +39,14 @@ class qpmpWin : public QMainWindow
 	void on_actionShuffle_triggered();
 	void on_actionMove_file_triggered();
 	void on_actionNo_delete_triggered();
+	void on_actionSave_triggered();
+	void updatecRow(int);
+
+	void on_actionDelete_triggered();
 
   private:
 	Ui::qpmpWin *ui;
+	int cRow;
 	QStringList mFiles;
 	QStringList fList;
 	QStringList pArgs; // Movie player arguments
@@ -49,14 +57,18 @@ class qpmpWin : public QMainWindow
 	void startPlayer();
 	void toggleArgs(QAction*,QString);
 	void deleteFile();
+	void saveFileList(QString);
+	void moveFile(QString, QString sDir="sett");
 	struct mAction{
 		bool ndel;
 		bool mv;
+		bool rm;
 	} mAction;
 
   signals:
 	void mFilesUpdated();
 	void statusChanged(QString);
+	void rowChanged(int);
 
   protected:
 	bool eventFilter(QObject *watched, QEvent *event);
