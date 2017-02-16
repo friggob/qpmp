@@ -71,18 +71,19 @@ bool qpmpWin::eventFilter(QObject *watched, QEvent *event){
 		return true;
 	  }
 	  if(keyEvent->key() == Qt::Key_M){
-		int row = ui->tableWidget->currentRow();
-		moveFile(ui->tableWidget->item(row,1)->toolTip());
+		//int row = ui->tableWidget->currentRow();
+		moveFile(ui->tableWidget->item(cRow,1)->toolTip());
+		emit rowChanged(cRow-1);
 		return true;
 	  }
 	  if(keyEvent->key() == Qt::Key_G){
-		int row = ui->tableWidget->currentRow();
-		moveFile(ui->tableWidget->item(row,1)->toolTip(),"_gg");
+		//int row = ui->tableWidget->currentRow();
+		moveFile(ui->tableWidget->item(cRow,1)->toolTip(),"_gg");
+		emit rowChanged(cRow-1);
 		return true;
 	  }
 	  if(keyEvent->key() == Qt::Key_R){
-		ui->tableWidget->selectRow(cRow-1);
-		emit updatecRow(cRow-1);
+		emit rowChanged(cRow-1);
 		startPlayer();
 		return true;
 	  }
@@ -111,7 +112,6 @@ void qpmpWin::deleteFile(){
 	qDebug() << "Removed file:" << f;
 	mFiles.removeAt(mFiles.indexOf(f));
 	emit mFilesUpdated();
-	ui->tableWidget->selectRow(row-1);
 	emit rowChanged(row-1);
   }else{
 	qDebug() << "Failed to remove file:" << f;
@@ -163,8 +163,6 @@ void qpmpWin::startPlayer(){
 	moveFile(mF);
 	row -= 1;
   }
-
-  tw->selectRow(row);
   emit rowChanged(row);
 }
 
@@ -178,12 +176,6 @@ void qpmpWin::setupTable(){
   tw->setRowCount(mFiles.count());
   tw->setSelectionMode(QTableWidget::SingleSelection);
   tw->setRowCount(1);
-  /*
-  tw->setItem(0,0,new QTableWidgetItem());
-  tw->setItem(0,1,new QTableWidgetItem());
-  tw->item(0,0)->setText("Null");
-  tw->item(0,1)->setText("Null");
-  */
 }
 
 void qpmpWin::updateTable(){
@@ -213,13 +205,11 @@ void qpmpWin::updateTable(){
 	sCell->setText(sizeFormat(fi.size()));
 
 	if(fi.absoluteFilePath() == startFile){
-	  tw->selectRow(i);
 	  emit rowChanged(i);
 	}
   }
 
   if(tw->currentRow() == -1){
-	tw->selectRow(0);
 	emit rowChanged(0);
   }
 
@@ -371,7 +361,7 @@ void qpmpWin::on_actionNo_Sound_triggered()
 
 void qpmpWin::updateStatus(QString msg){
   QString m;
-  m = "Current dir:" + QDir(".").absolutePath();
+  m = "Current dir: " + QDir(".").absolutePath();
   m += " : " + msg;
   ui->statusBar->showMessage(m);
 }
@@ -403,7 +393,6 @@ void qpmpWin::on_actionShuffle_triggered()
 {
   std::random_shuffle(mFiles.begin(),mFiles.end());
   updateTable();
-  ui->tableWidget->selectRow(0);
   emit rowChanged(0);
 }
 
@@ -444,11 +433,11 @@ void qpmpWin::saveFileList(QString file){
 	ts << l << "\n";
   }
   f.close();
+  updateStatus("File list saved to "+file);
 }
 
 void qpmpWin::on_actionSaveAs_triggered()
 {
-  QString sFile;
   sFile = QFileDialog::getSaveFileName(this,"Save playlist",NULL);
   saveFileList(sFile);
 }
@@ -459,27 +448,39 @@ void qpmpWin::on_actionSave_triggered()
   QString cDir = QDir(".").absolutePath();
 
   if(appDir != cDir){
-	saveFileList("__savelist.txt");
+	if(sFile.isEmpty()){
+	  saveFileList("__savelist.txt");
+	}else{
+	  saveFileList(sFile);
+	}
   }else{
 	emit on_actionSaveAs_triggered();
   }
 }
 
 void qpmpWin::moveFile(QString s,QString sDir){
+  QString nfn;
+  QString nfp;
   QFile f(s);
   QFileInfo fi(f);
   QDir d(fi.absoluteDir());
-  if(d.mkpath(sDir)){
-	qDebug() << "Created dir:" << (d.absolutePath() + "/" + sDir);
-	if(f.rename(sDir+"/"+fi.fileName())){
+
+  nfp = d.absolutePath() + "/" + sDir;
+  nfn = nfp + "/" + fi.fileName();
+  if(d.mkpath(nfp)){
+	qDebug() << "Created dir:" << nfp;
+	if(f.rename(nfn)){
 	  mFiles.removeAt(mFiles.indexOf(s));
 	  emit mFilesUpdated();
+	}else{
+	  qDebug() << "Moving file " << fi.absoluteFilePath() << "to" << nfn << "failed";
 	}
   }
 }
 
 void qpmpWin::updatecRow(int row){
- cRow = row;
+  cRow = row;
+  ui->tableWidget->selectRow(row);
 }
 
 void qpmpWin::on_actionDelete_triggered()

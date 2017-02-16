@@ -41,7 +41,6 @@ class qpmpWin : public QMainWindow
 	void on_actionNo_delete_triggered();
 	void on_actionSave_triggered();
 	void updatecRow(int);
-
 	void on_actionDelete_triggered();
 
   private:
@@ -52,6 +51,7 @@ class qpmpWin : public QMainWindow
 	QStringList pArgs; // Movie player arguments
 	QString startFile; // Start playlist with this file
 	QString startDir; // Current dir when program starts
+	QString sFile; // Savelist file name
 	void resizeEvent(QResizeEvent *event);
 	void setupTable();
 	void startPlayer();
